@@ -69,7 +69,7 @@ export default function ListScreen({ navigation }) {
                 data={gastos}
                 keyExtractor={(item) => String(item.id)}
                 renderItem={({ item }) => (
-                    <ItemCard item={item} onEdit={() => editar(item)} onDelete={() => eliminar(item)} />
+                    <ItemCard item={item} colors={colors} onEdit={() => editar(item)} onDelete={() => eliminar(item)} />
                 )}
                 contentContainerStyle={gastos.length === 0 ? styles.centro : styles.lista}
                 // Mensaje cuando no hay gastos
@@ -90,5 +90,5 @@ const styles = StyleSheet.create({
     centro: { flexGrow: 1, alignItems: 'center', justifyContent: 'center' },
     lista: { padding: spacing.md, gap: spacing.sm },
     vacio: { alignItems: 'center', gap: spacing.md },
-    vacioTexto: { fontSize: fontSizes.medium },
+    vacioTexto: { fontSize: fontSizes.body },
 });

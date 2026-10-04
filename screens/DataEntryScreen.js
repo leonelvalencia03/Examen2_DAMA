@@ -227,13 +227,13 @@ export default function DataEntryScreen({ route, navigation }) {
 const styles = StyleSheet.create({
     centro: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     contenido: { padding: spacing.lg, paddingBottom: spacing.xl * 2 },
-    label: { fontSize: fontSizes.medium, fontWeight: '600', marginTop: spacing.md, marginBottom: spacing.xs },
+    label: { fontSize: fontSizes.body, fontWeight: '600', marginTop: spacing.md, marginBottom: spacing.xs },
     input: {
         borderWidth: 1,
         borderRadius: radius.md,
         paddingHorizontal: spacing.md,
         paddingVertical: spacing.sm,
-        fontSize: fontSizes.medium,
+        fontSize: fontSizes.body,
     },
     multilinea: { minHeight: 80, textAlignVertical: 'top' },
     error: { fontSize: fontSizes.small, marginTop: spacing.xs },
@@ -256,6 +256,6 @@ const styles = StyleSheet.create({
         paddingVertical: spacing.md,
         marginTop: spacing.xl,
     },
-    botonTexto: { fontSize: fontSizes.medium, fontWeight: '700' },
+    botonTexto: { fontSize: fontSizes.body, fontWeight: '700' },
 });
 
