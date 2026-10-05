@@ -1,32 +1,23 @@
 // Navegación principal con pestañas inferiores: Home, Lista y Perfil
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
-import HomeScreen from '../screens/HomeScreen';
-import ProfileScreen from '../screens/ProfileScreen';
-import ListStack from './ListStack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-const Tab = createBottomTabNavigator();
+import { useAuth } from '../context/AuthContext';
+import AppTabs from './AppTabs';
+import AuthStack from './AuthStack';
 
-// Ícono de cada pestaña (relleno si está activa, contorno si no)
-const ICONOS = { Home: 'home', Lista: 'list', Perfil: 'person' };
+const Stack = createNativeStackNavigator();
 
-export default function AppTabs() {
-  return (
-    <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => (
-          <Ionicons
-            name={focused ? ICONOS[route.name] : `${ICONOS[route.name]}-outline`}
-            size={size}
-            color={color}
-          />
-        ),
-      })}
-    >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Inicio' }} />
-      {/* headerShown: false evita un header doble, porque ListStack ya tiene el suyo */}
-      <Tab.Screen name="Lista" component={ListStack} options={{ headerShown: false }} />
-      <Tab.Screen name="Perfil" component={ProfileScreen} />
-    </Tab.Navigator>
-  );
+export default function AppNavigator() {
+
+    const { user } = useAuth();
+
+    return (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+            {user ? (
+                <Stack.Screen name="Main" component={AppTabs} />
+            ) : (
+                <Stack.Screen name="Auth" component={AuthStack} />
+            )}
+        </Stack.Navigator>
+    );
 }

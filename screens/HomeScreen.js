@@ -5,39 +5,49 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { getItems } from '../services/database';
+import { useTheme } from '../context/ThemeContext';
+import { spacing, fontSizes, radius } from '../styles/theme';
 
 export default function HomeScreen({ navigation }) {
   const { user } = useAuth();
+  const { colors } = useTheme();
+
   const [total, setTotal] = useState(0);
 
   // Recarga el total cada vez que Home recibe el foco
-  // (por ejemplo, al volver después de crear un registro)
   useFocusEffect(
     useCallback(() => {
       const cargarTotal = async () => {
         try {
-          const items = await getItems();
+          const items = await getItems(user?.nombreUsuario);
           setTotal(items.length);
         } catch (e) {
           console.log('Error al cargar el total:', e);
         }
       };
+
       cargarTotal();
     }, [])
   );
 
-  // Accesos rápidos: navegan a otras pestañas o a pantallas del stack anidado
+  // Accesos rápidos
   const accesos = [
     {
       titulo: 'Nuevo registro',
       icono: 'add-circle-outline',
-      // initial: false deja ListScreen debajo, así la flecha "atrás" regresa a la lista
-      onPress: () => navigation.navigate('Lista', { screen: 'DataEntryScreen', initial: false }),
+      onPress: () =>
+        navigation.navigate('Lista', {
+          screen: 'DataEntryScreen',
+          initial: false,
+        }),
     },
     {
       titulo: 'Ver lista',
       icono: 'list-outline',
-      onPress: () => navigation.navigate('Lista', { screen: 'ListScreen' }),
+      onPress: () =>
+        navigation.navigate('Lista', {
+          screen: 'ListScreen',
+        }),
     },
     {
       titulo: 'Mi perfil',
@@ -47,25 +57,94 @@ export default function HomeScreen({ navigation }) {
   ];
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.bienvenida}>¡Hola, {user?.nombre ?? 'usuario'}!</Text>
-      <Text style={styles.subtitulo}>Este es tu panel principal</Text>
+    <ScrollView
+      style={[
+        styles.scroll,
+        { backgroundColor: colors.background },
+      ]}
+      contentContainerStyle={styles.container}
+    >
+      <Text style={[styles.bienvenida, { color: colors.text }]}>
+        ¡Hola, {user?.nombre ?? 'usuario'}!
+      </Text>
+
+      <Text
+        style={[
+          styles.subtitulo,
+          { color: colors.textSecondary },
+        ]}
+      >
+        Este es tu panel principal
+      </Text>
 
       {/* Tarjeta de resumen */}
-      <View style={styles.tarjeta}>
-        <Ionicons name="albums-outline" size={36} color="#2563eb" />
+      <View
+        style={[
+          styles.tarjeta,
+          {
+            backgroundColor: colors.card,
+            borderColor: colors.border,
+          },
+        ]}
+      >
+        <Ionicons
+          name="albums-outline"
+          size={36}
+          color={colors.primary}
+        />
+
         <View>
-          <Text style={styles.total}>{total}</Text>
-          <Text>Registros guardados</Text>
+          <Text style={[styles.total, { color: colors.text }]}>
+            {total}
+          </Text>
+
+          <Text style={{ color: colors.textSecondary }}>
+            Registros guardados
+          </Text>
         </View>
       </View>
 
-      <Text style={styles.seccion}>Accesos rápidos</Text>
+      <Text
+        style={[
+          styles.seccion,
+          { color: colors.text },
+        ]}
+      >
+        Accesos rápidos
+      </Text>
+
       {accesos.map((a) => (
-        <Pressable key={a.titulo} style={styles.acceso} onPress={a.onPress}>
-          <Ionicons name={a.icono} size={24} color="#2563eb" />
-          <Text style={styles.accesoTexto}>{a.titulo}</Text>
-          <Ionicons name="chevron-forward" size={20} color="#999" />
+        <Pressable
+          key={a.titulo}
+          style={[
+            styles.acceso,
+            {
+              backgroundColor: colors.card,
+              borderColor: colors.border,
+            },
+          ]}
+          onPress={a.onPress}
+        >
+          <Ionicons
+            name={a.icono}
+            size={24}
+            color={colors.primary}
+          />
+
+          <Text
+            style={[
+              styles.accesoTexto,
+              { color: colors.text },
+            ]}
+          >
+            {a.titulo}
+          </Text>
+
+          <Ionicons
+            name="chevron-forward"
+            size={20}
+            color={colors.textSecondary}
+          />
         </Pressable>
       ))}
     </ScrollView>
@@ -73,18 +152,58 @@ export default function HomeScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20 },
-  bienvenida: { fontSize: 26, fontWeight: 'bold' },
-  subtitulo: { fontSize: 16, color: '#666', marginBottom: 20 },
+  scroll: {
+    flex: 1,
+  },
+
+  container: {
+    padding: spacing.md,
+  },
+
+  bienvenida: {
+    fontSize: fontSizes.title,
+    fontWeight: 'bold',
+    marginBottom: spacing.xs,
+  },
+
+  subtitulo: {
+    fontSize: fontSizes.body,
+    marginBottom: spacing.lg,
+  },
+
   tarjeta: {
-    flexDirection: 'row', alignItems: 'center', gap: 16,
-    padding: 20, borderRadius: 12, backgroundColor: '#eff6ff', marginBottom: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    padding: spacing.lg,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    marginBottom: spacing.lg,
   },
-  total: { fontSize: 32, fontWeight: 'bold' },
-  seccion: { fontSize: 18, fontWeight: '600', marginBottom: 12 },
+
+  total: {
+    fontSize: fontSizes.header,
+    fontWeight: 'bold',
+  },
+
+  seccion: {
+    fontSize: fontSizes.subtitle,
+    fontWeight: '600',
+    marginBottom: spacing.sm,
+  },
+
   acceso: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 16, borderRadius: 10, borderWidth: 1, borderColor: '#e5e7eb', marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    marginBottom: spacing.sm,
   },
-  accesoTexto: { flex: 1, fontSize: 16 },
+
+  accesoTexto: {
+    flex: 1,
+    fontSize: fontSizes.body,
+  },
 });

@@ -1,16 +1,17 @@
-   import * as SQLite from 'expo-sqlite';
+import * as SQLite from 'expo-sqlite';
 
 const DB_NAME = 'misgastos.db';
 
-// Guardamos la promesa de la base abierta para que aunque varias pantallas la llamen, no se abra varias veces
 let dbPromise = null;
 
-//Abrimos la db y crea la tabla si no existe (solo se ejecuta la primera vez que se abre la db)
+//Abre la base de datos y crea la tabla si no existe
 const abrirDB = async () => {
     const db = await SQLite.openDatabaseAsync(DB_NAME);
+
     await db.execAsync(
         `CREATE TABLE IF NOT EXISTS gastos (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            usuario TEXT,
             concepto TEXT NOT NULL,
             descripcion TEXT,
             categoria TEXT NOT NULL,
@@ -18,74 +19,128 @@ const abrirDB = async () => {
             fecha TEXT NOT NULL
         );`
     );
+
+    //Si la tabla ya existía desde antes, agregamos la columna usuario.
+    //Esto evita romper la base de datos que ya teníamos.
+    const columnas = await db.getAllAsync('PRAGMA table_info(gastos)');
+
+    const existeUsuario = columnas.some(
+        (columna) => columna.name === 'usuario'
+    );
+
+    if (!existeUsuario) {
+        await db.execAsync(
+            'ALTER TABLE gastos ADD COLUMN usuario TEXT;'
+        );
+    }
+
     return db;
 };
 
-// Devuelve la db lista para usarla y si falla reintenta abrirla
+//Devuelve la DB lista para usar
 const getDB = () => {
     if (!dbPromise) {
         dbPromise = abrirDB().catch((error) => {
             console.error('Error al abrir la base de datos:', error);
-            dbPromise = null; // Reiniciamos la promesa para que se pueda reintentar abrir la db
+            dbPromise = null;
             throw error;
         });
     }
+
     return dbPromise;
 };
 
-// Creamos la tabla gastos
+//Inicializa la base de datos
 export const initDB = async () => {
     await getDB();
 };
 
-// Insertar un gasto en la base de datos, devuelve el id generado por SQLite
-export const createItem = async ({ concepto, descripcion, categoria, monto, fecha }) => {
+//Crear un gasto
+export const createItem = async (
+    { concepto, descripcion, categoria, monto, fecha },
+    usuario
+) => {
     const db = await getDB();
+
     const resultado = await db.runAsync(
-    'INSERT INTO gastos (concepto, descripcion, categoria, monto, fecha) VALUES (?, ?, ?, ?, ?)',
-    concepto,
-    descripcion ?? '',
-    categoria,
-    monto,
-    fecha
-  );
-  return resultado.lastInsertRowid;
+        `INSERT INTO gastos
+        (usuario, concepto, descripcion, categoria, monto, fecha)
+        VALUES (?, ?, ?, ?, ?, ?)`,
+        usuario,
+        concepto,
+        descripcion ?? '',
+        categoria,
+        monto,
+        fecha
+    );
+
+    return resultado.lastInsertRowid;
 };
 
-// Devuelve todos los gastos, el mas reciente primero.
-// Si dos gastsos tienen la misma fecha, el que se insertó de ultimo aparecerá primero.
-export const getItems = async () => {
+//Obtener solamente los gastos del usuario
+export const getItems = async (usuario) => {
     const db = await getDB();
-    return db.getAllAsync('SELECT * FROM gastos ORDER BY fecha DESC, id DESC');
+
+    return db.getAllAsync(
+        `SELECT * FROM gastos
+         WHERE usuario = ?
+         ORDER BY fecha DESC, id DESC`,
+        usuario
+    );
 };
 
-// Devuelve ve un gasto por su id, o null si no existe
-export const getItemById = async (id) => {
+//Obtener un gasto específico del usuario
+export const getItemById = async (id, usuario) => {
     const db = await getDB();
-    const fila = await db.getFirstAsync('SELECT * FROM gastos WHERE id = ?', id);
+
+    const fila = await db.getFirstAsync(
+        `SELECT * FROM gastos
+         WHERE id = ? AND usuario = ?`,
+        id,
+        usuario
+    );
+
     return fila ?? null;
 };
 
-// Actualiza los campos de un gasto, devuelve cuantas filas fueron afectadas (0 o 1)
-export const updateItem = async (id, { concepto, descripcion, categoria, monto, fecha }) => {
-  const db = await getDB();
-  const resultado = await db.runAsync(
-    'UPDATE gastos SET concepto = ?, descripcion = ?, categoria = ?, monto = ?, fecha = ? WHERE id = ?',
-    concepto,
-    descripcion ?? '',
-    categoria,
-    monto,
-    fecha,
-    id
-  );
-  return resultado.changes;
+//Actualizar un gasto del usuario
+export const updateItem = async (
+    id,
+    { concepto, descripcion, categoria, monto, fecha },
+    usuario
+) => {
+    const db = await getDB();
+
+    const resultado = await db.runAsync(
+        `UPDATE gastos
+         SET concepto = ?,
+             descripcion = ?,
+             categoria = ?,
+             monto = ?,
+             fecha = ?
+         WHERE id = ? AND usuario = ?`,
+        concepto,
+        descripcion ?? '',
+        categoria,
+        monto,
+        fecha,
+        id,
+        usuario
+    );
+
+    return resultado.changes;
 };
 
-// Elimina un gasto por su id, devuelve cuantas filas fueron afectadas (0 o 1)
-export const deleteItem = async (id) => {
-  const db = await getDB();
-  const resultado = await db.runAsync('DELETE FROM gastos WHERE id = ?', id);
-  return resultado.changes;
+//Eliminar un gasto del usuario
+export const deleteItem = async (id, usuario) => {
+    const db = await getDB();
+
+    const resultado = await db.runAsync(
+        `DELETE FROM gastos
+         WHERE id = ? AND usuario = ?`,
+        id,
+        usuario
+    );
+
+    return resultado.changes;
 };
-
-

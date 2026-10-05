@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import { categories, categoryColors, categoryIcons, spacing, radius, fontSizes } from '../styles/theme.js';
 import { createItem, getItemById, updateItem } from '../services/database';
 
@@ -26,6 +27,7 @@ const fechaValida = (texto) => {
 
 export default function DataEntryScreen({ route, navigation }) {
     const { colors } = useTheme();
+    const { user } = useAuth();
 
 
     // Si llega un id es edicion, si no es un nuevo gasto
@@ -47,7 +49,7 @@ export default function DataEntryScreen({ route, navigation }) {
         if (!modoEditar) return;
         const cargar = async () => {
             try {
-                const gasto = await getItemById(id);
+                const gasto = await getItemById(id, user?.nombreUsuario);
                 if (!gasto) {
                     Alert.alert('Error', 'No se encontró el gasto.');
                     navigation.goBack();
@@ -100,9 +102,9 @@ export default function DataEntryScreen({ route, navigation }) {
         setGuardando(true);
         try {
             if (modoEditar) {
-                await updateItem(id, datos);
+                await updateItem(id, datos, user?.nombreUsuario);
             } else {
-                await createItem(datos);
+                await createItem(datos, user?.nombreUsuario);
             }
             navigation.goBack(); // ListScreen se recarga sola con useFocusEffect
         } catch (error) {
