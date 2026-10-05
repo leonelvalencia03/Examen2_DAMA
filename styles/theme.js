@@ -1,7 +1,3 @@
-// styles/theme.js
-// Tema global de la app "MisGastos": paletas de color (claro y oscuro),
-// tamaños de fuente, espaciados, bordes y categorías de gastos.
-
 // ---------- Paleta modo claro ----------
 export const lightColors = {
   background: '#F5F5F5',     // fondo de pantallas
@@ -55,7 +51,6 @@ export const radius = {
 };
 
 // ---------- Sombra estándar para tarjetas ----------
-// elevation aplica en Android; shadow* aplica en iOS
 export const shadow = {
   shadowColor: '#000',
   shadowOffset: { width: 0, height: 2 },
