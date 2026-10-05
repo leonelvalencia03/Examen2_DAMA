@@ -28,7 +28,7 @@ export default function LoginScreen(){
     };
 
     return (
-    <view>
+    <View>
         <Text style={styles.titulo}>Iniciar sesión</Text>
 
         <TextInput
@@ -56,7 +56,7 @@ export default function LoginScreen(){
       >
         <Text style={styles.botonTexto}>{cargando ? 'Ingresando...' : 'Ingresar'}</Text>
       </Pressable>
-    </view>
+    </View>
     );
 }
 

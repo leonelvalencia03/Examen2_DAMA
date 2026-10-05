@@ -6,16 +6,18 @@ import { useTheme } from '../context/ThemeContext';
 import { spacing, fontSizes } from '../styles/theme.js';
 import ItemCard from '../components/ItemCard.js';
 import { getItems, deleteItem } from '../services/database';
+import { useAuth } from '../context/AuthContext';
 
 export default function ListScreen({ navigation }) {
     const { colors } = useTheme();
+    const { user } = useAuth();
     const [gastos, setGastos] = useState([]);
     const [cargando, setCargando] = useState(true);
 
     // Lee los gastos de SQLite
     const cargarGastos = async () => {
         try {
-            setGastos(await getItems());
+            setGastos(await getItems(user?.nombreUsuario));
         } catch (e) {
             console.log('Error al cargar los gastos:', e);
             Alert.alert('Error', 'No se pudieron cargar los gastos.');
@@ -44,7 +46,7 @@ export default function ListScreen({ navigation }) {
                 style: 'destructive',
                 onPress: async () => {
                     try {
-                        await deleteItem(item.id);
+                        await deleteItem(item.id, user?.nombreUsuario);
                         await cargarGastos();
                     } catch (e) {
                         console.log('Error al eliminar:', e);
